@@ -1,0 +1,51 @@
+GKE Deployment
+==============
+1.Get source code
+set GITHUB_URL="https://github.com/mrayandutta/springboot-gcp-stackdriver-logging.git"
+set PROJECT_NAME="springboot-gcp-stackdriver-logging"
+set PROJECT_VERSION ="v1"
+set GKE_CLUSTER_NAME ="GKE_Logging_Test"
+set GKE_CLUSTER_ZONE_NAME ="us-central1-c"
+set PROJECT_ID="gke-poc-354414"
+
+gcloud config set project $PROJECT_ID
+git clone ${GITHUB_URL}
+cd ${PROJECT_NAME}
+2.Create the JAR deployable for the app.
+mvn -DskipTests package
+3.Enable Container Registry to store the container image that you'll create.
+gcloud services enable containerregistry.googleapis.com
+4. Use Jib to create the container image and push it to the Container Registry.
+export GOOGLE_CLOUD_PROJECT=`gcloud config list --format="value(core.project)"`
+mvn -DskipTests com.google.cloud.tools:jib-maven-plugin:build -Dimage=gcr.io/$GOOGLE_CLOUD_PROJECT/${PROJECT_NAME}:${PROJECT_VERSION}
+mvn -DskipTests com.google.cloud.tools:jib-maven-plugin:build -Dimage=gcr.io/$GOOGLE_CLOUD_PROJECT/${PROJECT_NAME}:v1
+
+Create the GKE Cluster
+gcloud container clusters create $GKE_CLUSTER_NAME --num-nodes=3 --region=$GKE_CLUSTER_ZONE_NAME
+gcloud container clusters create gke-logging-test --num-nodes=3 --region=us-central1-c
+
+
+$ gcloud config set container/cluster gke-application-demo-cluster
+5.Get authentication credentials for the cluster
+After creating your cluster, you need to get authentication credentials to interact with the cluster:
+gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone=$GKE_CLUSTER_ZONE_NAME
+gcloud container clusters get-credentials gke-logging-test --zone=us-central1-c
+6. Deploy your app to Kubernetes
+sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
+kubectl create deployment ${PROJECT_NAME} --image=gcr.io/$GOOGLE_CLOUD_PROJECT/${PROJECT_NAME}:${PROJECT_VERSION}
+kubectl create deployment springboot-gcp-stackdriver-logging --image=gcr.io/gke-poc-354414/springboot-gcp-stackdriver-logging:v1
+To view the deployment that you created, simply run the following command:
+kubectl get deployments
+7.Expose the Deployment
+After deploying the application, you need to expose it to the internet so that users can access it.
+You can expose your application by creating a Service, a Kubernetes resource that exposes your application to external traffic.
+To expose your application, run the following kubectl expose command:
+kubectl expose deployment ${PROJECT_NAME} --type LoadBalancer --port 8080 --target-port 8080
+kubectl expose deployment springboot-gcp-stackdriver-logging --type LoadBalancer --port 8080 --target-port 8080
+kubectl get services
+8.
+http://34.72.0.131:8080/contractlastws
+9.Delete the $GKE_CLUSTER_NAME
+gcloud container clusters resize gke-logging-test --num-nodes=0 --zone=us-central1-c
+gcloud container clusters get-credentials gke-logging-test --zone=us-central1-c
+gcloud container clusters delete cluster-1 --zone=GKE_CLUSTER_ZONE_NAME
