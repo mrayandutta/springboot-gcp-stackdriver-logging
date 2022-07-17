@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 @SpringBootApplication
 @Slf4j
@@ -22,15 +24,25 @@ public class GKESpringApplication {
 @Slf4j
 class SampleRestController {
 
+    private String getTimeString()
+    {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat simpleformat = new SimpleDateFormat("dd/MMMM/yyyy hh:mm:s");
+        String timeString = simpleformat.format(cal.getTime());
+        return timeString;
+    }
+
     @GetMapping("/hello")
     public String hello() {
-        log.info("Hello !!!!!!");
-        return "Hello !!!!!!";
+        String response = "Hello !!!!!!,timestamp is :"+ getTimeString();
+        log.info(response);
+        return response;
     }
 
     @GetMapping("hello/{name}")
     public String hello(@Valid @PathVariable("name") String name) {
-        log.info("Test log!!!!!!!!!!!");
-        return "Hello " + name;
+        String response = "Test log!!!!!!!!!!!,timestamp is :"+ getTimeString();
+        log.info(response);
+        return response;
     }
 }

@@ -9,6 +9,7 @@ set GKE_CLUSTER_ZONE_NAME ="us-central1-c"
 set PROJECT_ID="gke-poc-354414"
 
 gcloud config set project $PROJECT_ID
+gcloud config set project gke-poc-354414
 git clone ${GITHUB_URL}
 cd ${PROJECT_NAME}
 2.Create the JAR deployable for the app.
@@ -47,5 +48,6 @@ kubectl get services
 http://34.72.0.131:8080/contractlastws
 9.Delete the $GKE_CLUSTER_NAME
 gcloud container clusters resize gke-logging-test --num-nodes=0 --zone=us-central1-c
+gcloud container clusters resize gke-logging-test --num-nodes=2 --zone=us-central1-c
 gcloud container clusters get-credentials gke-logging-test --zone=us-central1-c
 gcloud container clusters delete cluster-1 --zone=GKE_CLUSTER_ZONE_NAME
